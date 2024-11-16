@@ -33,11 +33,6 @@ import uk.ac.tees.mad.plasmalink.ui.theme.Purple
 fun SplashScreen(onTimeout: () -> Unit) {
 
     LaunchedEffect(Unit) {
-        val 
-        SystemBarStyle.light(
-            Color.Black.toArgb(),
-            Color.White.toArgb()
-        )
         delay(3000)
         onTimeout()
     }

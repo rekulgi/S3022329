@@ -14,6 +14,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import uk.ac.tees.mad.plasmalink.ui.screens.HomeScreen
+import uk.ac.tees.mad.plasmalink.ui.screens.LoginScreen
+import uk.ac.tees.mad.plasmalink.ui.screens.RegisterScreen
 import uk.ac.tees.mad.plasmalink.ui.screens.SplashScreen
 import uk.ac.tees.mad.plasmalink.ui.theme.PlasmaLinkTheme
 
@@ -32,18 +35,23 @@ class MainActivity : ComponentActivity() {
                     composable(Destinations.SPLASH_ROUTE) {
                         SplashScreen(
                             onTimeout = {
-
+                                navController.navigate(Destinations.LOGIN_ROUTE) {
+                                    popUpTo(Destinations.SPLASH_ROUTE) {
+                                        inclusive = true
+                                    }
+                                    launchSingleTop = true
+                                }
                             }
                         )
                     }
                     composable(Destinations.LOGIN_ROUTE) {
-
+                        LoginScreen()
                     }
                     composable(Destinations.REGISTER_ROUTE) {
-
+                        RegisterScreen()
                     }
                     composable(Destinations.HOME_ROUTE) {
-
+                        HomeScreen()
                     }
                     composable(Destinations.PLASMA_REQUEST_ROUTE) {
 
