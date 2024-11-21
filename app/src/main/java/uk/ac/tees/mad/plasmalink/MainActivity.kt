@@ -60,7 +60,18 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable(Destinations.REGISTER_ROUTE) {
-                        RegisterScreen()
+                        RegisterScreen(
+                            onRegisterSuccess = {
+                                navController.navigate(Destinations.HOME_ROUTE) {
+                                    popUpTo(Destinations.REGISTER_ROUTE) {
+                                        inclusive = true
+                                    }
+                                }
+                            },
+                            onNavigateToLogin = {
+                                navController.navigate(Destinations.LOGIN_ROUTE)
+                            }
+                        )
                     }
                     composable(Destinations.HOME_ROUTE) {
                         HomeScreen()
