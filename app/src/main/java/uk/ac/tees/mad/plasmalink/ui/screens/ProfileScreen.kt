@@ -16,11 +16,11 @@ import uk.ac.tees.mad.plasmalink.Destinations
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(onNavigate: (String) -> Unit) {
+fun ProfileScreen(onNavigate: (String) -> Unit) {
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(text = "PlasmaLink") })
+            TopAppBar(title = { Text(text = "Profile") })
         },
         bottomBar = {
             BottomNavigationBar(currentScreen = Destinations.HOME_ROUTE) { route ->

@@ -6,17 +6,29 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import uk.ac.tees.mad.plasmalink.ui.screens.DonationCentreScreen
 import uk.ac.tees.mad.plasmalink.ui.screens.HomeScreen
 import uk.ac.tees.mad.plasmalink.ui.screens.LoginScreen
+import uk.ac.tees.mad.plasmalink.ui.screens.ProfileScreen
 import uk.ac.tees.mad.plasmalink.ui.screens.RegisterScreen
+import uk.ac.tees.mad.plasmalink.ui.screens.RequestDetailScreen
+import uk.ac.tees.mad.plasmalink.ui.screens.RequestPlasmaScreen
 import uk.ac.tees.mad.plasmalink.ui.screens.SplashScreen
 import uk.ac.tees.mad.plasmalink.ui.theme.PlasmaLinkTheme
 
@@ -74,19 +86,49 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable(Destinations.HOME_ROUTE) {
-                        HomeScreen()
+                        HomeScreen(
+                            onNavigate = { route ->
+                                navController.navigate(route) {
+                                    popUpTo(navController.graph.startDestinationId) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        )
                     }
                     composable(Destinations.PLASMA_REQUEST_ROUTE) {
-
+                        RequestPlasmaScreen()
                     }
                     composable(Destinations.DETAIL_ROUTE) {
 
+                        RequestDetailScreen()
                     }
                     composable(Destinations.DONATION_CENTRE_ROUTE) {
+                        DonationCentreScreen(onNavigate = { route ->
+                            navController.navigate(route) {
+                                popUpTo(navController.graph.startDestinationId) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
 
+                        })
                     }
                     composable(Destinations.PROFILE_ROUTE) {
-
+                        ProfileScreen(
+                            onNavigate = { route ->
+                                navController.navigate(route) {
+                                    popUpTo(navController.graph.startDestinationId) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        )
                     }
                 }
             }
@@ -104,3 +146,45 @@ object Destinations {
     const val DONATION_CENTRE_ROUTE = "donation_centre"
     const val PROFILE_ROUTE = "profile"
 }
+
+@Composable
+fun BottomNavigationBar(
+    currentScreen: String,
+    onNavigateTo: (String) -> Unit
+) {
+    NavigationBar(containerColor = Color(0xFF6200EE)) {
+        val items = listOf(
+            NavigationItem(
+                Destinations.HOME_ROUTE,
+                "Home",
+                Icons.Default.Home
+            ),
+            NavigationItem(
+                Destinations.DONATION_CENTRE_ROUTE,
+                "Donation Centers",
+                Icons.Default.Person
+            ),
+            NavigationItem(
+                Destinations.PROFILE_ROUTE,
+                "Profile",
+                Icons.Default.Person
+            )
+        )
+
+        items.forEach { item ->
+            NavigationBarItem(
+                icon = {
+                    Icon(
+                        imageVector = item.icon,
+                        contentDescription = item.label
+                    )
+                },
+                label = { Text(item.label) },
+                selected = currentScreen == item.route,
+                onClick = { onNavigateTo(item.route) }
+            )
+        }
+    }
+}
+
+data class NavigationItem(val route: String, val label: String, val icon: ImageVector)
