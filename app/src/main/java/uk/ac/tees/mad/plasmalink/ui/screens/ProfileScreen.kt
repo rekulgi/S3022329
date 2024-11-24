@@ -23,7 +23,7 @@ fun ProfileScreen(onNavigate: (String) -> Unit) {
             TopAppBar(title = { Text(text = "Profile") })
         },
         bottomBar = {
-            BottomNavigationBar(currentScreen = Destinations.HOME_ROUTE) { route ->
+            BottomNavigationBar(currentScreen = Destinations.PROFILE_ROUTE) { route ->
                 onNavigate(route)
             }
         }
@@ -34,7 +34,7 @@ fun ProfileScreen(onNavigate: (String) -> Unit) {
                 .padding(innerPad),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = "Home Screen", fontSize = 24.sp)
+            Text(text = "Profile", fontSize = 24.sp)
         }
     }
 }

@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +23,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import uk.ac.tees.mad.plasmalink.ui.screens.DonationCentreScreen
 import uk.ac.tees.mad.plasmalink.ui.screens.HomeScreen
 import uk.ac.tees.mad.plasmalink.ui.screens.LoginScreen
@@ -31,6 +34,7 @@ import uk.ac.tees.mad.plasmalink.ui.screens.RequestDetailScreen
 import uk.ac.tees.mad.plasmalink.ui.screens.RequestPlasmaScreen
 import uk.ac.tees.mad.plasmalink.ui.screens.SplashScreen
 import uk.ac.tees.mad.plasmalink.ui.theme.PlasmaLinkTheme
+import uk.ac.tees.mad.plasmalink.ui.theme.Purple
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,7 +43,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             PlasmaLinkTheme {
                 val navController = rememberNavController()
-
+                val isLoggedIn = Firebase.auth.currentUser?.uid != null
                 NavHost(
                     navController = navController,
                     startDestination = Destinations.SPLASH_ROUTE
@@ -47,7 +51,7 @@ class MainActivity : ComponentActivity() {
                     composable(Destinations.SPLASH_ROUTE) {
                         SplashScreen(
                             onTimeout = {
-                                navController.navigate(Destinations.LOGIN_ROUTE) {
+                                navController.navigate(if (isLoggedIn) Destinations.HOME_ROUTE else Destinations.LOGIN_ROUTE) {
                                     popUpTo(Destinations.SPLASH_ROUTE) {
                                         inclusive = true
                                     }
@@ -152,7 +156,7 @@ fun BottomNavigationBar(
     currentScreen: String,
     onNavigateTo: (String) -> Unit
 ) {
-    NavigationBar(containerColor = Color(0xFF6200EE)) {
+    NavigationBar() {
         val items = listOf(
             NavigationItem(
                 Destinations.HOME_ROUTE,
@@ -181,7 +185,14 @@ fun BottomNavigationBar(
                 },
                 label = { Text(item.label) },
                 selected = currentScreen == item.route,
-                onClick = { onNavigateTo(item.route) }
+                onClick = { onNavigateTo(item.route) },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Purple,
+                    unselectedIconColor = Color.Gray,
+                    selectedTextColor = Purple,
+                    unselectedTextColor = Color.Gray,
+                    indicatorColor = Color.White
+                )
             )
         }
     }
