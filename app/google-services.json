@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "99400207296",
-    "project_id": "plasmalink-f3169",
+    "project_number": "8044933820",
+    "project_id": "plasmalink-7eb93",
     "storage_bucket": "plasmalink-7eb93.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:99400207296:android:de118525b69fa745551625",
+        "mobilesdk_app_id": "1:8044933820:android:0d7620381e65ae93f696b9",
         "android_client_info": {
           "package_name": "uk.ac.tees.mad.plasmalink"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCvy8A3SYe7MG3rqoNnw0ViFnhMIJa82iE"
+          "current_key": "AIzaSyCZ4CgIIG7L-Yg8Z5Sq-GLORzo-pAPsKi0"
         }
       ],
       "services": {

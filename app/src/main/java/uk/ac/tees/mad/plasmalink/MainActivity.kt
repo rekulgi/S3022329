@@ -103,7 +103,14 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable(Destinations.PLASMA_REQUEST_ROUTE) {
-                        RequestPlasmaScreen()
+                        RequestPlasmaScreen(
+                            onBackClick = {
+
+                            },
+                            onSuccessfulRequest = {
+                                navController.navigate(Destinations.HOME_ROUTE)
+                            }
+                        )
                     }
                     composable(Destinations.DETAIL_ROUTE) {
 

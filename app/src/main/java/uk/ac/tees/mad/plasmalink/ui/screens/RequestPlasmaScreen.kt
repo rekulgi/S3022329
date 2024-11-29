@@ -1,5 +1,6 @@
 package uk.ac.tees.mad.plasmalink.ui.screens
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -16,16 +18,21 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun RequestPlasmaScreen() {
+fun RequestPlasmaScreen(onBackClick: () -> Unit, onSuccessfulRequest: () -> Unit) {
     var bloodGroup by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
     var patientCondition by remember { mutableStateOf("") }
@@ -33,7 +40,7 @@ fun RequestPlasmaScreen() {
     var contactInfo by remember { mutableStateOf("") }
     var plasmaType by remember { mutableStateOf("") }
     var specialInstructions by remember { mutableStateOf("") }
-    var covidReportUri by remember { mutableStateOf("") }
+    var covidReportUri by remember { mutableStateOf<Uri?>(null) }
     var errorMessage by remember { mutableStateOf("") }
 
     var expanded by remember { mutableStateOf(false) }
@@ -48,7 +55,7 @@ fun RequestPlasmaScreen() {
             TopAppBar(
                 title = { Text(text = "Request Plasma", fontSize = 20.sp) },
                 navigationIcon = {
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
@@ -106,7 +113,15 @@ fun RequestPlasmaScreen() {
                     label = { Text("Location") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.medium,
-                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next)
+                    trailingIcon = {
+                        IconButton(onClick = { /*TODO*/ }) {
+                            Icon(Icons.Default.LocationOn, contentDescription = "Location")
+                        }
+                    },
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction =
+                        ImeAction.Next
+                    )
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -170,14 +185,39 @@ fun RequestPlasmaScreen() {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                TextField(
-                    value = covidReportUri,
-                    onValueChange = { covidReportUri = it },
-                    label = { Text("COVID Negative Report URI") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done)
-                )
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .clickable {
+                            if (cameraPermissionState.status.isGranted) {
+
+                            } else {
+                                cameraPermissionState.launchPermissionRequest()
+
+                            }
+
+                        }
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (covidReportUri == null) {
+
+                            Text(text = "Upload Covid Report")
+                        } else {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(covidReportUri)
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = "Covid Report",
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -189,7 +229,7 @@ fun RequestPlasmaScreen() {
                 Button(
                     onClick = {
                         if (bloodGroup.isEmpty() || location.isEmpty() || patientCondition.isEmpty() ||
-                            patientName.isEmpty() || contactInfo.isEmpty() || plasmaType.isEmpty() || covidReportUri.isEmpty()
+                            patientName.isEmpty() || contactInfo.isEmpty() || plasmaType.isEmpty() || covidReportUri == null
                         ) {
                             errorMessage = "Please fill in all fields."
                         } else {
