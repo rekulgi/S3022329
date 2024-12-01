@@ -105,7 +105,7 @@ class MainActivity : ComponentActivity() {
                     composable(Destinations.PLASMA_REQUEST_ROUTE) {
                         RequestPlasmaScreen(
                             onBackClick = {
-
+                                navController.popBackStack()
                             },
                             onSuccessfulRequest = {
                                 navController.navigate(Destinations.HOME_ROUTE)

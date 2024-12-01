@@ -69,6 +69,8 @@ dependencies {
 
     implementation("com.google.accompanist:accompanist-permissions:0.35.0-alpha")
     implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation(libs.play.services.location)
+    implementation("androidx.compose.material:material-icons-extended:1.6.8")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
