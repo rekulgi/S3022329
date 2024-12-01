@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -26,6 +27,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -74,8 +76,8 @@ import java.io.ByteArrayOutputStream
 fun RequestPlasmaScreen(onBackClick: () -> Unit, onSuccessfulRequest: () -> Unit) {
     var bloodGroup by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
-    var latitude by remember { mutableStateOf("") }
-    var longitude by remember { mutableStateOf("") }
+    var latitude by remember { mutableStateOf(0.0) }
+    var longitude by remember { mutableStateOf(0.0) }
     var patientCondition by remember { mutableStateOf("") }
     var patientName by remember { mutableStateOf("") }
     var contactInfo by remember { mutableStateOf("") }
@@ -246,8 +248,8 @@ fun RequestPlasmaScreen(onBackClick: () -> Unit, onSuccessfulRequest: () -> Unit
                                                 }
                                             }
                                         )
-                                        latitude = loc.latitude.toString()
-                                        longitude = loc.longitude.toString()
+                                        latitude = loc.latitude
+                                        longitude = loc.longitude
                                         errorMessage = ""
 
                                     },
@@ -385,35 +387,53 @@ fun RequestPlasmaScreen(onBackClick: () -> Unit, onSuccessfulRequest: () -> Unit
                             errorMessage = "Please fill in all fields."
                         } else {
                             loading = true
+                            val storageRef = Firebase.storage.reference
+                            val imageRef = storageRef.child("covidReports/${covidReportUri?.lastPathSegment}")
 
-                            val requestData = hashMapOf(
-                                "patientName" to patientName,
-                                "contactInfo" to contactInfo,
-                                "bloodGroup" to bloodGroup,
-                                "location" to location,
-                                "latitude" to latitude,
-                                "longitude" to longitude,
-                                "patientCondition" to patientCondition,
-                                "plasmaType" to plasmaType,
-                                "specialInstructions" to specialInstructions,
-                                "covidReportUri" to covidReportUri.toString()
-                            )
+                            val uploadTask = imageRef.putFile(covidReportUri!!)
 
-                            Firebase.firestore.collection("plasmaRequests")
-                                .add(requestData)
-                                .addOnSuccessListener {
-                                    onSuccessfulRequest()
+                            uploadTask.addOnSuccessListener {
+                                imageRef.downloadUrl.addOnSuccessListener { uri ->
+                                    val requestData = hashMapOf(
+                                        "patientName" to patientName,
+                                        "contactInfo" to contactInfo,
+                                        "bloodGroup" to bloodGroup,
+                                        "location" to location,
+                                        "latitude" to latitude,
+                                        "longitude" to longitude,
+                                        "patientCondition" to patientCondition,
+                                        "plasmaType" to plasmaType,
+                                        "specialInstructions" to specialInstructions,
+                                        "covidReportUri" to uri.toString()
+                                    )
+
+                                    Firebase.firestore.collection("plasmaRequests")
+                                        .add(requestData)
+                                        .addOnSuccessListener {
+                                            onSuccessfulRequest()
+                                        }
+                                        .addOnFailureListener { e ->
+                                            scope.launch {
+                                                snackbarHostState.showSnackbar(
+                                                    message = e.message ?: "Firestore error",
+                                                    actionLabel = "Error",
+                                                    duration = SnackbarDuration.Short
+                                                )
+                                            }
+                                            loading = false
+                                        }
                                 }
-                                .addOnFailureListener { e ->
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar(
-                                            message = e.message ?: "Firestore error",
-                                            actionLabel = "Error",
-                                            duration = SnackbarDuration.Short
-                                        )
-                                    }
-                                    loading = false
+                            }.addOnFailureListener { exception ->
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = exception.message ?: "Storage error",
+                                        actionLabel = "Error",
+                                        duration = SnackbarDuration.Short
+                                    )
                                 }
+                                loading = false
+                            }
+
                         }
                     },
                     modifier = Modifier
@@ -421,7 +441,14 @@ fun RequestPlasmaScreen(onBackClick: () -> Unit, onSuccessfulRequest: () -> Unit
                         .height(56.dp),
                     shape = MaterialTheme.shapes.medium,
                 ) {
-                    Text(text = "Submit Request")
+                    if (loading) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    } else {
+                        Text(text = "Submit Request")
+                    }
                 }
             }
         }
