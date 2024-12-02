@@ -23,6 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import uk.ac.tees.mad.plasmalink.ui.screens.DonationCentreScreen
@@ -102,6 +103,7 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
+
                     composable(Destinations.PLASMA_REQUEST_ROUTE) {
                         RequestPlasmaScreen(
                             onBackClick = {
@@ -112,10 +114,19 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
-                    composable(Destinations.DETAIL_ROUTE) {
 
-                        RequestDetailScreen()
+                    composable(
+                        route = Destinations.DETAIL_ROUTE + "/{id}",
+                        arguments = listOf(
+                            navArgument("id") {
+                                type = androidx.navigation.NavType.StringType
+                            }
+                        )
+                    ) { backstack ->
+                        val id = backstack.arguments?.getString("id")
+                        RequestDetailScreen( id = id)
                     }
+
                     composable(Destinations.DONATION_CENTRE_ROUTE) {
                         DonationCentreScreen(onNavigate = { route ->
                             navController.navigate(route) {

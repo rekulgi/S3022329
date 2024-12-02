@@ -3,6 +3,7 @@ package uk.ac.tees.mad.plasmalink.domain
 import android.net.Uri
 
 data class PlasmaDonationRequest(
+    val id: String = "",
     val patientName: String = "",
     val contactInfo: String = "",
     val bloodGroup: String = "",

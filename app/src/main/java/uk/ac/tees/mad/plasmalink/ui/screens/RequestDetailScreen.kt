@@ -5,6 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 @Composable
-fun RequestDetailScreen(modifier: Modifier = Modifier) {
+fun RequestDetailScreen(id: String?) {
     Text(text = "RequestDetailScreen")
 }
