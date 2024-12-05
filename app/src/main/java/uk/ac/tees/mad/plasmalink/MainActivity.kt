@@ -124,7 +124,9 @@ class MainActivity : ComponentActivity() {
                         )
                     ) { backstack ->
                         val id = backstack.arguments?.getString("id")
-                        RequestDetailScreen( id = id)
+                        RequestDetailScreen(
+                            id = id,
+                            navigateBack = { navController.popBackStack() })
                     }
 
                     composable(Destinations.DONATION_CENTRE_ROUTE) {
