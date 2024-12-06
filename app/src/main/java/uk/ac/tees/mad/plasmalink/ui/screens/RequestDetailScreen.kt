@@ -1,5 +1,6 @@
 package uk.ac.tees.mad.plasmalink.ui.screens
 
+import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import android.widget.Button
@@ -44,15 +45,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat.startActivity
 import coil.compose.rememberAsyncImagePainter
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import uk.ac.tees.mad.plasmalink.domain.PlasmaDonationRequest
 import uk.ac.tees.mad.plasmalink.ui.theme.Purple
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun RequestDetailScreen(id: String?, navigateBack: () -> Unit) {
     val request = PlasmaDonationRequest()
     val context = LocalContext.current
-
+    val callPermission = rememberPermissionState(permission = Manifest.permission.CALL_PHONE)
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -127,16 +131,16 @@ fun RequestDetailScreen(id: String?, navigateBack: () -> Unit) {
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        text = "Contact: ${request.contactInfo}",
+                        text = request.contactInfo,
                         fontSize = 18.sp
                     )
                     Text(
-                        text = "Blood Group: ${request.bloodGroup}",
+                        text = request.bloodGroup,
                         fontSize = 18.sp
 
                     )
                     Text(
-                        text = "Location: ${request.location}",
+                        text = request.location,
                         fontSize = 18.sp
 
                     )
@@ -190,7 +194,7 @@ fun RequestDetailScreen(id: String?, navigateBack: () -> Unit) {
                 ) {
 
                     Text(
-                        text = "hi ${request.patientCondition}", fontSize = 18.sp,
+                        text = request.patientCondition, fontSize = 18.sp,
                         modifier = Modifier.padding(8.dp)
                     )
                     HorizontalDivider(
@@ -226,9 +230,13 @@ fun RequestDetailScreen(id: String?, navigateBack: () -> Unit) {
 
                 Button(
                     onClick = {
-                        val intent = Intent(Intent.ACTION_CALL);
-                        intent.data = Uri.parse("tel:${request.contactInfo}")
-                        context.startActivity(intent)
+                        if (callPermission.status.isGranted) {
+                            val intent = Intent(Intent.ACTION_CALL);
+                            intent.data = Uri.parse("tel:${request.contactInfo}")
+                            context.startActivity(intent)
+                        } else {
+                            callPermission.launchPermissionRequest()
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
