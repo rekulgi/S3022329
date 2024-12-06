@@ -13,5 +13,5 @@ data class PlasmaDonationRequest(
     val patientCondition: String = "",
     val plasmaType: String = "",
     val specialInstructions: String = "",
-    val covidReportUri: Uri? = null
+    val covidReportUri: String? = null
 )

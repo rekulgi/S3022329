@@ -88,7 +88,6 @@ fun HomeScreen(onNavigate: (String) -> Unit) {
             .get()
             .addOnSuccessListener { documents ->
                 donationRequests = documents.map { doc ->
-                    val covidUri = doc.getString("covidReportUri")
                     PlasmaDonationRequest(
                         id = doc.id,
                         patientName = doc.getString("patientName") ?: "",
@@ -100,7 +99,6 @@ fun HomeScreen(onNavigate: (String) -> Unit) {
                         patientCondition = doc.getString("patientCondition") ?: "",
                         plasmaType = doc.getString("plasmaType") ?: "",
                         specialInstructions = doc.getString("specialInstructions") ?: "",
-                        covidReportUri = Uri.parse(covidUri) ?: null
                     )
                 }
                 isLoading = false
@@ -116,6 +114,7 @@ fun HomeScreen(onNavigate: (String) -> Unit) {
             snackbarHostState.showSnackbar(
                 errorMessage
             )
+            errorMessage = ""
         }
     }
 
