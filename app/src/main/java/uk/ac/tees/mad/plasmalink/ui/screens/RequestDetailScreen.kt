@@ -232,20 +232,20 @@ fun RequestDetailScreen(id: String?, navigateBack: () -> Unit) {
 
                             Text(
                                 text = "Condition",
-                                fontSize = 18.sp,
+                                fontSize = 16.sp,
                                 modifier = Modifier.padding(8.dp)
                             )
                             HorizontalDivider(color = Purple)
                             Text(
                                 text = "Plasma Type",
-                                fontSize = 18.sp,
+                                fontSize = 16.sp,
                                 modifier = Modifier.padding(8.dp)
                             )
                             HorizontalDivider(color = Purple)
 
                             Text(
                                 text = "Special Instructions",
-                                fontSize = 18.sp,
+                                fontSize = 16.sp,
                                 modifier = Modifier.padding(8.dp)
                             )
                         }
@@ -258,7 +258,8 @@ fun RequestDetailScreen(id: String?, navigateBack: () -> Unit) {
 
                             Text(
                                 text = request.patientCondition, fontSize = 18.sp,
-                                modifier = Modifier.padding(8.dp)
+                                modifier = Modifier.padding(8.dp),
+                                fontWeight = FontWeight.Medium
                             )
                             HorizontalDivider(
                                 color = Purple
@@ -266,13 +267,15 @@ fun RequestDetailScreen(id: String?, navigateBack: () -> Unit) {
 
                             Text(
                                 text = request.plasmaType, fontSize = 18.sp,
-                                modifier = Modifier.padding(8.dp)
+                                modifier = Modifier.padding(8.dp),
+                                fontWeight = FontWeight.Medium
                             )
                             HorizontalDivider(color = Purple)
 
                             Text(
                                 text = request.specialInstructions, fontSize = 18.sp,
-                                modifier = Modifier.padding(8.dp)
+                                modifier = Modifier.padding(8.dp),
+                                fontWeight = FontWeight.Medium
                             )
                         }
                     }
