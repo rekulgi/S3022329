@@ -71,6 +71,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.6.0")
     implementation(libs.play.services.location)
     implementation("androidx.compose.material:material-icons-extended:1.6.8")
+    implementation(libs.play.services.maps)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
