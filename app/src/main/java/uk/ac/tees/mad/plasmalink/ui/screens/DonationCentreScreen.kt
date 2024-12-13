@@ -17,10 +17,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.sp
-import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
+import com.google.maps.android.compose.CameraPositionState
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberMarkerState
 import uk.ac.tees.mad.plasmalink.BottomNavigationBar
 import uk.ac.tees.mad.plasmalink.Destinations
 import uk.ac.tees.mad.plasmalink.domain.PlasmaDonationCenter
@@ -32,6 +38,10 @@ fun DonationCentreScreen(onNavigate: (String) -> Unit) {
     var donationCenters by remember { mutableStateOf<List<PlasmaDonationCenter>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
+
+    val cameraPositionState = rememberCameraPositionState() {
+        position = CameraPosition(LatLng(55.3781, -3.4360), 7f, 0f, 0f)
+    }
 
     LaunchedEffect(Unit) {
         firestore.collection("donationCentres")
@@ -47,6 +57,8 @@ fun DonationCentreScreen(onNavigate: (String) -> Unit) {
                 isLoading = false
             }
     }
+
+
     Scaffold(
         topBar = {
             TopAppBar(title = { Text(text = "PlasmaLink") })
@@ -74,7 +86,26 @@ fun DonationCentreScreen(onNavigate: (String) -> Unit) {
                     modifier = Modifier.align(Alignment.Center)
                 )
             } else {
-                Text(text = "Google map")
+
+
+                GoogleMap(
+                    modifier = Modifier.fillMaxSize(),
+                    cameraPositionState = cameraPositionState
+                ) {
+                    donationCenters.forEach { center ->
+                        val markerState = rememberMarkerState(
+                            position = LatLng(
+                                center.latitude,
+                                center.longitude
+                            )
+                        )
+                        Marker(
+                            state = markerState,
+                            title = center.name,
+                            snippet = center.address
+                        )
+                    }
+                }
             }
         }
 
