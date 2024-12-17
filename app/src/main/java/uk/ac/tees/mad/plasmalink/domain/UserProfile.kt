@@ -5,5 +5,4 @@ data class UserProfile(
     val email: String = "",
     val phoneNumber: String = "",
     val bloodGroup: String = "",
-    val donationHistory: List<PlasmaDonationRequest> = emptyList()
 )
