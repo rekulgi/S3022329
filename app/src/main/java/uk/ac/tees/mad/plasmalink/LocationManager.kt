@@ -36,6 +36,9 @@ class LocationManager(
         LocationServices.getFusedLocationProviderClient(context)
     private val settingsClient: SettingsClient = LocationServices.getSettingsClient(context)
     private lateinit var locationCallback: LocationCallback
+    val locationPrefs by lazy {
+        LocationCache(context)
+    }
 
 
     @SuppressLint("MissingPermission")
@@ -43,6 +46,13 @@ class LocationManager(
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 result.locations.forEach { location ->
+                    getAddressFromCoordinates(
+                        location.latitude,
+                        location.longitude, {
+                            locationPrefs.saveLocation(it ?: "")
+                        },
+                        {}
+                    )
                     onSuccess(location)
                 }
             }

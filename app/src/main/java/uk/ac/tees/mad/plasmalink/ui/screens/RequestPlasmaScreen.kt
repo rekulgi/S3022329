@@ -43,6 +43,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -64,16 +65,21 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import uk.ac.tees.mad.plasmalink.LocationCache
 import uk.ac.tees.mad.plasmalink.LocationManager
+import uk.ac.tees.mad.plasmalink.domain.UserProfile
 import java.io.ByteArrayOutputStream
 
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun RequestPlasmaScreen(onBackClick: () -> Unit, onSuccessfulRequest: () -> Unit) {
+
     var bloodGroup by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
     var latitude by remember { mutableStateOf(0.0) }
@@ -84,14 +90,27 @@ fun RequestPlasmaScreen(onBackClick: () -> Unit, onSuccessfulRequest: () -> Unit
     var plasmaType by remember { mutableStateOf("") }
     var specialInstructions by remember { mutableStateOf("") }
     var covidReportUri by remember { mutableStateOf<Uri?>(null) }
+    var userProfile by remember { mutableStateOf(UserProfile()) }
+
+
     var errorMessage by remember { mutableStateOf("") }
     var loading by remember {
         mutableStateOf(false)
     }
     var expanded by remember { mutableStateOf(false) }
     val plasmaTypes = listOf("Convalescent Plasma", "Standard Plasma", "Other")
-
+    val auth = Firebase.auth
+    val firestore = Firebase.firestore
+    val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val locationPrefs = remember { LocationCache(context) }
+
+    LaunchedEffect(locationPrefs.getLocation()) {
+        locationPrefs.getLocation()?.let {
+            location = it
+        }
+    }
+
     val locationManager = remember { LocationManager(context) }
     val locationPermissionsState = rememberMultiplePermissionsState(
         permissions = listOf(
@@ -102,21 +121,16 @@ fun RequestPlasmaScreen(onBackClick: () -> Unit, onSuccessfulRequest: () -> Unit
         if (it.containsValue(true)) {
             locationManager.getCurrentLocation(
                 onSuccess = { loc ->
-                    if (loc != null) {
-                        locationManager.getAddressFromCoordinates(
-                            loc.latitude,
-                            loc.longitude,
-                            onSuccess = {
-                                location = it ?: ""
-                            },
-                            onError = { error ->
-                                errorMessage = error
-                            }
-                        )
-
-                    } else {
-                        errorMessage = "Unable to retrieve location."
-                    }
+                    locationManager.getAddressFromCoordinates(
+                        loc.latitude,
+                        loc.longitude,
+                        onSuccess = {
+                            location = it ?: ""
+                        },
+                        onError = { error ->
+                            errorMessage = error
+                        }
+                    )
                 },
                 onError = {
                     errorMessage = it
@@ -156,7 +170,48 @@ fun RequestPlasmaScreen(onBackClick: () -> Unit, onSuccessfulRequest: () -> Unit
     val snackbarHostState = remember {
         SnackbarHostState()
     }
-    val scope = rememberCoroutineScope()
+
+
+    LaunchedEffect(Unit) {
+        val userId = auth.currentUser?.uid
+        if (userId != null) {
+            firestore.collection("users").document(userId)
+                .get()
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        userProfile = document.toObject(UserProfile::class.java)!!
+                        patientName = userProfile.name
+                        contactInfo = userProfile.phoneNumber
+                        bloodGroup = userProfile.bloodGroup
+                    }
+                    if (userProfile.bloodGroup.isEmpty() || userProfile.phoneNumber.isEmpty()) {
+                        scope.launch {
+                            snackbarHostState.showSnackbar(
+                                message = "Please update your profile before requesting plasma.",
+                                duration = SnackbarDuration.Short
+                            )
+                            onBackClick()
+                        }
+                    }
+                    loading = false
+                }
+                .addOnFailureListener { exception ->
+                    errorMessage = "Error fetching user profile: ${exception.message}"
+                    loading = false
+                }
+        } else {
+            errorMessage = "User not authenticated"
+            loading = false
+        }
+    }
+    LaunchedEffect(errorMessage) {
+        if (errorMessage.isNotEmpty()) {
+            snackbarHostState.showSnackbar(
+                errorMessage
+            )
+            errorMessage = ""
+        }
+    }
 
     Scaffold(
         snackbarHost = {
@@ -192,7 +247,8 @@ fun RequestPlasmaScreen(onBackClick: () -> Unit, onSuccessfulRequest: () -> Unit
                     label = { Text("Patient Name") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.medium,
-                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next)
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+                    readOnly = true
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -203,7 +259,9 @@ fun RequestPlasmaScreen(onBackClick: () -> Unit, onSuccessfulRequest: () -> Unit
                     label = { Text("Contact Number") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.medium,
-                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next)
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+                    readOnly = true
+
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -214,7 +272,8 @@ fun RequestPlasmaScreen(onBackClick: () -> Unit, onSuccessfulRequest: () -> Unit
                     label = { Text("Blood Group") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = MaterialTheme.shapes.medium,
-                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next)
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+                    readOnly = true
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -238,14 +297,7 @@ fun RequestPlasmaScreen(onBackClick: () -> Unit, onSuccessfulRequest: () -> Unit
                                                 location = it ?: ""
                                             },
                                             onError = { error ->
-                                                scope.launch {
-                                                    snackbarHostState.showSnackbar(
-                                                        error,
-                                                        withDismissAction = true,
-                                                        actionLabel = "Error",
-                                                        duration = SnackbarDuration.Short
-                                                    )
-                                                }
+                                                errorMessage = error
                                             }
                                         )
                                         latitude = loc.latitude
@@ -254,14 +306,8 @@ fun RequestPlasmaScreen(onBackClick: () -> Unit, onSuccessfulRequest: () -> Unit
 
                                     },
                                     onError = { error ->
-                                        scope.launch {
-                                            snackbarHostState.showSnackbar(
-                                                error,
-                                                withDismissAction = true,
-                                                actionLabel = "Error",
-                                                duration = SnackbarDuration.Short
-                                            )
-                                        }
+                                        errorMessage = error
+
                                     }
                                 )
                             } else {
@@ -388,7 +434,8 @@ fun RequestPlasmaScreen(onBackClick: () -> Unit, onSuccessfulRequest: () -> Unit
                         } else {
                             loading = true
                             val storageRef = Firebase.storage.reference
-                            val imageRef = storageRef.child("covidReports/${covidReportUri?.lastPathSegment}")
+                            val imageRef =
+                                storageRef.child("covidReports/${covidReportUri?.lastPathSegment}")
 
                             val uploadTask = imageRef.putFile(covidReportUri!!)
 
@@ -413,24 +460,16 @@ fun RequestPlasmaScreen(onBackClick: () -> Unit, onSuccessfulRequest: () -> Unit
                                             onSuccessfulRequest()
                                         }
                                         .addOnFailureListener { e ->
-                                            scope.launch {
-                                                snackbarHostState.showSnackbar(
-                                                    message = e.message ?: "Firestore error",
-                                                    actionLabel = "Error",
-                                                    duration = SnackbarDuration.Short
-                                                )
-                                            }
+                                            errorMessage =
+                                                e.message ?: "Firestore error"
+
                                             loading = false
                                         }
                                 }
                             }.addOnFailureListener { exception ->
-                                scope.launch {
-                                    snackbarHostState.showSnackbar(
-                                        message = exception.message ?: "Storage error",
-                                        actionLabel = "Error",
-                                        duration = SnackbarDuration.Short
-                                    )
-                                }
+                                errorMessage =
+                                    exception.message ?: "Storage error"
+
                                 loading = false
                             }
 

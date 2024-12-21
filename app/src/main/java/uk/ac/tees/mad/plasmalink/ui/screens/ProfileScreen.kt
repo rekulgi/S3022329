@@ -48,6 +48,7 @@ import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import okhttp3.internal.wait
 import uk.ac.tees.mad.plasmalink.BottomNavigationBar
 import uk.ac.tees.mad.plasmalink.Destinations
 import uk.ac.tees.mad.plasmalink.domain.UserProfile
@@ -109,7 +110,7 @@ fun ProfileScreen(onNavigate: (String) -> Unit) {
                             isLoading = true
                             delay(2000)
                             snackbarHostState.showSnackbar(
-                                "Logged out successfully"
+                                "Logged out successfully. Navigating to login screen..."
                             )
                             onNavigate(Destinations.LOGIN_ROUTE)
                         }

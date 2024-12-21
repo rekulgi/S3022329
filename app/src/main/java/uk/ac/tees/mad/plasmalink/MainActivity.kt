@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -186,7 +187,7 @@ fun BottomNavigationBar(
             NavigationItem(
                 Destinations.DONATION_CENTRE_ROUTE,
                 "Donation Centers",
-                Icons.Default.Person
+                Icons.Default.LocalHospital
             ),
             NavigationItem(
                 Destinations.PROFILE_ROUTE,
