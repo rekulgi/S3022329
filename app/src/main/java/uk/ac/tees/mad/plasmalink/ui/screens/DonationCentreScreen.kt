@@ -58,7 +58,6 @@ fun DonationCentreScreen(onNavigate: (String) -> Unit) {
             }
     }
 
-
     Scaffold(
         topBar = {
             TopAppBar(title = { Text(text = "PlasmaLink") })

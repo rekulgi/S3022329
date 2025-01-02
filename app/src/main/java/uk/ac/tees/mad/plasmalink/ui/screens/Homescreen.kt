@@ -68,6 +68,8 @@ fun HomeScreen(onNavigate: (String) -> Unit) {
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
 
+
+
     LaunchedEffect(Unit) {
         snackbarHostState.showSnackbar(
             "Shake to request plasma",
